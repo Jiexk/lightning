@@ -480,12 +480,19 @@ inline int ltgbuf_init(ltgbuf_t *buf, int size)
 
         ANALYSIS_BEGIN(0);
 
+        void *addr = NULL;
+        uint64_t tsize;
+        get_global_private_mem((void **)&addr, &tsize);
+
         int left;
         //int coreid = __coreid();
         left = size;
         do {
                 
                 seg = seg_huge_create(buf, &newsize);
+
+                if (addr && (seg->handler.ptr < addr || seg->handler.ptr + newsize > addr + tsize))
+                        LTG_ASSERT(0);
 
                 seg_add_tail(buf, seg);
                 left -= newsize;
